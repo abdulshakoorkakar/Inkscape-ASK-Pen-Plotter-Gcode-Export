@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+  <name>Export Gcode</name>
+  <id>org.penplotter.gcode_export</id>
+
+  <param name="tab" type="notebook">
+
+    <page name="pen" gui-text="Pen &amp; Speed">
+      <param name="output_file" type="path" mode="file_new" filetypes="gcode,nc,ngc,txt"
+             gui-text="Output file:">plot.gcode</param>
+
+      <label appearance="header">Pen commands</label>
+      <param name="pen_up" type="string" gui-text="Pen up command:">M3 S0</param>
+      <param name="pen_down" type="string" gui-text="Pen down command:">M3 S180</param>
+      <param name="pen_delay" type="int" min="0" max="10000"
+             gui-text="Wait after pen up/down (ms):"
+             gui-description="Gives the servo time to move before the plotter starts moving.">100</param>
+      <param name="dwell_units" type="optiongroup" appearance="combo"
+             gui-text="Dwell format (G4 P...):">
+        <option value="s">Seconds - GRBL</option>
+        <option value="ms">Milliseconds - Marlin</option>
+      </param>
+
+      <label appearance="header">Speed</label>
+      <param name="draw_speed" type="int" min="1" max="100000"
+             gui-text="Drawing speed (mm/min):">1500</param>
+      <param name="travel_speed" type="int" min="1" max="100000"
+             gui-text="Travel speed, pen up (mm/min):">4000</param>
+    </page>
+
+    <page name="mode" gui-text="Mode">
+      <param name="mode" type="optiongroup" appearance="combo" gui-text="Mode:">
+        <option value="none">Pen Plotter: (no offset)</option>
+        <option value="inside">Pen Plotter: (path inside)</option>
+        <option value="outside">Pen Plotter: (path outside)</option>
+        <option value="fill">Pen Plotter: (lines fill)</option>
+      </param>
+
+      <label appearance="header">Path inside / outside</label>
+      <param name="pen_width" type="float" min="0" max="50" precision="2"
+             gui-text="Pen width (mm):"
+             gui-description="Closed paths are shifted by half this width so the edge of the ink line lands on the path.">0.5</param>
+
+      <label appearance="header">Lines fill</label>
+      <param name="fill_spacing" type="float" min="0.05" max="100" precision="2"
+             gui-text="Line spacing (mm):"
+             gui-description="Use your pen width for a solid fill, larger for a hatched look.">0.5</param>
+      <param name="fill_angle" type="float" min="-180" max="180" precision="1"
+             gui-text="Line angle (degrees):">45</param>
+      <param name="fill_outline" type="bool" gui-text="Also draw the outline">true</param>
+
+      <label appearance="header">Drag knife</label>
+      <param name="knife_offset" type="float" min="0" max="10" precision="2"
+             gui-text="Blade offset (mm):"
+             gui-description="Distance from the blade's rotation axis to its cutting tip. Check your blade's spec; 0.25 to 0.5 mm is typical.">0.25</param>
+      <param name="knife_overcut" type="float" min="0" max="20" precision="2"
+             gui-text="Overcut on closed shapes (mm):"
+             gui-description="Cuts slightly past the start point so shapes release cleanly.">1.0</param>
+    </page>
+
+    <page name="geometry" gui-text="Geometry">
+      <param name="selection_only" type="bool"
+             gui-text="Export only selected objects (if anything is selected)">true</param>
+      <param name="flip_y" type="bool"
+             gui-text="Flip Y axis (origin at bottom-left of page)"
+             gui-description="Inkscape's Y axis points down, most plotters point up. Turn off if your plot comes out mirrored.">true</param>
+      <param name="optimize" type="bool"
+             gui-text="Optimize path order (less pen-up travel)">true</param>
+      <param name="return_home" type="bool"
+             gui-text="Return to X0 Y0 when finished">true</param>
+      <param name="tolerance" type="float" min="0.005" max="5" precision="3"
+             gui-text="Curve tolerance (mm):"
+             gui-description="Curves are converted to short straight lines. Smaller = smoother but bigger files.">0.05</param>
+      <param name="scale" type="float" min="0.1" max="10000" precision="2"
+             gui-text="Scale (%):">100</param>
+      <param name="offset_x" type="float" min="-10000" max="10000" precision="2"
+             gui-text="X offset (mm):">0</param>
+      <param name="offset_y" type="float" min="-10000" max="10000" precision="2"
+             gui-text="Y offset (mm):">0</param>
+    </page>
+
+    <page name="help" gui-text="Help">
+      <label>Exports all visible paths and shapes as G-code for a pen plotter. Coordinates are in millimetres, absolute, measured from the page corner.</label>
+      <label>Text must be converted first: Path &gt; Object to Path. Only outlines are drawn; fills are ignored (use a hatch fill extension if you want filled areas).</label>
+      <label>Hidden layers and hidden objects are skipped.</label>
+    </page>
+
+  </param>
+
+  <effect needs-live-preview="false">
+    <object-type>all</object-type>
+    <effects-menu>
+      <submenu name="ASK Pen Plotter"/>
+    </effects-menu>
+  </effect>
+
+  <script>
+    <command location="inx" interpreter="python">penplotter_gcode.py</command>
+  </script>
+</inkscape-extension>
